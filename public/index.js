@@ -23,55 +23,79 @@ async function main() {
 
     stocks.forEach( stock => stock.values.reverse())
 
-var ctx = document.getElementById('myChart').getContext('2d');
-var myChart = new Chart(timeChartCanvas.getContext('2d'), {
-    type: 'line',
-    data: {
-        labels: stocks[0].values.map(value => value.datetime),
-        datasets: stocks.map( stock => ({
-            label: stock.meta.symbol,
-            data: stock.values.map(value => parseFloat(value.high)),
-            backgroundColor: getColor(stock.meta.symbol),
-            borderColor: getColor(stock.meta.symbol),
+      // Time Chart
+      new Chart(timeChartCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: stocks[0].values.map(value => value.datetime),
+            datasets: stocks.map(stock => ({
+                label: stock.meta.symbol,
+                backgroundColor: getColor(stock.meta.symbol),
+                borderColor: getColor(stock.meta.symbol),
+                data: stock.values.map(value => parseFloat(value.high))
+            }))
+        }
+    });
 
-        }))
+    // High Chart
+    new Chart(highestPriceChartCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: stocks.map(stock => stock.meta.symbol),
+            datasets: [{
+                label: 'Highest',
+                backgroundColor: stocks.map(stock => (
+                    getColor(stock.meta.symbol)
+                )),
+                borderColor: stocks.map(stock => (
+                    getColor(stock.meta.symbol)
+                )),
+                data: stocks.map(stock => (
+                    findHighest(stock.values)
+                ))
+            }]
+        }
+    });
+
+    // Average Chart
+    new Chart(averagePriceChartCanvas.getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: stocks.map(stock => stock.meta.symbol),
+            datasets: [{
+                label: 'Average',
+                backgroundColor: stocks.map(stock => (
+                    getColor(stock.meta.symbol)
+                )),
+                borderColor: stocks.map(stock => (
+                    getColor(stock.meta.symbol)
+                )),
+                data: stocks.map(stock => (
+                    calculateAverage(stock.values)
+                ))
+            }]
+        }
+    });
+}
+
+function findHighest(values) {
+    let highest = 0;
+    values.forEach(value => {
+        if (parseFloat(value.high) > highest) {
+            highest = value.high
         }
     })
-    
-    let highestPrices = []
+    return highest
+}
 
-    function makeHighest(){
-        let i = 0
-        let highestPrice = 0
-    stocks.forEach(findHighest(stock)) 
-        function findHighest (stock) {
-            if(stock[i] > highestPrice){
-            highestPrice = stock[i]
-            highestPrices.push(highestPrice)
-        }
-    }
-    }
-    makeHighest()
-    console.log(highestPrices)
-    };
-    
-    const config = {
-        type: 'bar',
-        data: highestPrices,
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        },
-      };
-        
-   
+function calculateAverage(values) {
+    let total = 0;
+    values.forEach(value => {
+        total += parseFloat(value.high)
+    })
+    return total / values.length
+}
 
-                                 
-main() 
-    
 function getColor(stock){
     if(stock === "GME"){
         return 'rgba(61, 161, 61, 0.7)'
@@ -86,5 +110,4 @@ function getColor(stock){
         return 'rgba(166, 43, 158, 0.7)'
     }
 }
-
-// 898d6fa351c84d449dcf68eff3accf92
+main()
